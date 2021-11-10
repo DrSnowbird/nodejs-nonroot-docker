@@ -24,7 +24,7 @@ If [ you are looking for such a common requirement as a base Container ]:
 # Create your own image from this
 
 ```
-FROM openkbs/java11-non-root
+FROM openkbs/nodejs-nonroot-docker
 ```
 
 # Quick commands
