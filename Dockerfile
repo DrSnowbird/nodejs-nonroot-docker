@@ -10,8 +10,6 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV USER_ID=${USER_ID:-1000}
 ENV GROUP_ID=${GROUP_ID:-1000}
 
-#ENV JAVA_VERSION=8
-ENV JAVA_VERSION=11
 
 ##############################################
 #### ---- Installation Directories   ---- ####
@@ -99,8 +97,6 @@ WORKDIR ${HOME}
 ############################################
 #### ---- Volumes: data, workspace ---- ####
 ############################################
-#VOLUME ${DATA}
-#VOLUME ${WORKSPACE}
 RUN mkdir ${HOME}/app
 WORKDIR ${HOME}/app
 
