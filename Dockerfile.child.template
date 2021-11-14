@@ -2,12 +2,14 @@ FROM openkbs/nodejs-nonroot-docker
 
 MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
 
-USER ${USER}
-WORKDIR ${HOME}
+USER ${USER:-developer}
+WORKDIR ${HOME:-/home/developer}
 
 #########################
-#### ---- Entry ---- ####
+#### ---- App:  ---- ####
 #########################
+COPY --chown=$USER:$USER ./app $HOME/app
+
 #### (Add your child container code here)
 #### (Add your child container code here)
 #### (Add your child container code here)
