@@ -10,7 +10,7 @@ if [ $# -lt 1 ]; then
     exit 1
 fi
 
-PROJECT_HOME=${1:-my_env}
+PROJECT_HOME=${1:-myvenv}
 
 PYTHON_VERSION=3
 #PYTHON_VERSION=3.6

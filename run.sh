@@ -23,7 +23,7 @@ fi
 ##    1: X11/Desktip container build image type
 ##    2: VNC/noVNC container build image type
 ## ------------------------------------------------------------------------
-BUILD_TYPE=1
+BUILD_TYPE=0
 
 ###################################################
 #### ---- Parse Command Line Arguments:  ---- #####
@@ -36,10 +36,10 @@ RESTART_OPTION_VALUES=" no on-failure unless-stopped always "
 RESTART_OPTION=${RESTART_OPTION:-no}
 
 ## ------------------------------------------------------------------------
-## "RUN_OPTION" values: 
-##    "-it" : (default) Interactive Container -
+## Valid "RUN_TYPE" values: 
+##    0: (default) Interactive Container -
 ##       ==> Best for Debugging Use
-##    "-d" : Detach Container / Non-Interactive 
+##    1: Detach Container / Non-Interactive 
 ##       ==> Usually, when not in debugging mode anymore, then use 1 as choice.
 ##       ==> Or, your frequent needs of the container for DEV environment Use.
 ## ------------------------------------------------------------------------
@@ -225,14 +225,11 @@ ENV_VARIABLE_PATTERN=""
 ###################################################
 #### ---- Change this only to use your own ----
 ###################################################
-ORGANIZATION=openkbs
+ORGANIZATION=${ORGANIZATION:-openkbs}
 baseDataFolder="$HOME/data-docker"
 
 ###################################################
-#### ---- Detect Host OS Type and minor Tweek: ----
-###################################################
-###################################################
-#### **** Container HOST information ****
+#### **** Container package information ****
 ###################################################
 SED_MAC_FIX="''"
 CP_OPTION="--backup=numbered"
@@ -501,20 +498,31 @@ echo "PORT_MAP=${PORT_MAP}"
 ###################################################
 #### ---- Generate Environment Variables       ----
 ###################################################
-ENV_VARS=${ENV_VARS}
-
-function generateEnvVars_v2() {
-    while read line; do
-        echo "Line=$line"
-        key=${line%=*}
-        value=${line#*=}
-        key=$(eval echo $value)
-        ENV_VARS="${ENV_VARS} -e ${line%=*}=$(eval echo $value)"
-    done < <(grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" ${DOCKER_ENV_FILE} | grep -v "^#")
-    echo "ENV_VARS=$ENV_VARS"
+ENV_VARS=""
+function generateEnvVars2() {
+    key_list=`cat ${DOCKER_ENV_FILE} | grep -v "^#" |  grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" |  awk 'BEGIN { FS = "=" } ; { print $1 }' `
+    echo "key_list=$key_list"
+    
+    for key in ${key_list}; do
+        echo ">>>> key=$key"
+        value=`cat ${DOCKER_ENV_FILE} | grep -v "^#" |grep "$key" |  grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" | awk 'BEGIN { FS = "=" } ; { k=$1; $1=""; print $0}' `
+        echo "value=$value"
+        #value_trim="${value##+([[:space:]])}"
+        value_trim="`echo $value | sed 's/^[[:space:]]*//'`"
+        echo "$key=${value_trim}" 
+        ENV_VARS="${ENV_VARS} -e \"${key}=${value_trim}"
+#        multi_words=`echo "$key"|grep APP_RUN_CMD`
+#        if [ "$multi_words" != "" ]; then
+#            ENV_VARS=$ENV_VARS" -e \"$key=$value_trim\""
+#            ENV_APP_RUN_CMD=" -e \"$key=$value_trim\""
+#        else
+#            ENV_VARS=$ENV_VARS" -e "$key="$value_trim"
+#        fi
+    done
 }
-generateEnvVars_v2
-echo ">> ENV_VARS=$ENV_VARS"
+generateEnvVars2
+echo "ENV_VARS=$ENV_VARS"
+echo "ENV_APP_RUN_CMD=$ENV_APP_RUN_CMD"
 
 function generateEnvVars() {
     if [ "${1}" != "" ]; then
@@ -526,15 +534,6 @@ function generateEnvVars() {
         #productEnvVars=`grep -E "^[[:blank:]]*$1[a-zA-Z0-9_]+[[:blank:]]*=[[:blank:]]*[a-zA-Z0-9_]+[[:blank:]]*" ${DOCKER_ENV_FILE}`
         productEnvVars=`grep -E "^[[:blank:]]*$1.+[[:blank:]]*=[[:blank:]]*.+[[:blank:]]*" ${DOCKER_ENV_FILE} | grep -v "^#"`
     fi
-    for vars in 
-        do
-        echo "Line=$line"
-        key=${line%=*}
-        value=${line#*=}
-        #key=$(eval echo $value)
-        #ENV_VARS="${ENV_VARS} -e ${line%=*}=$(eval echo $value)"
-        ENV_VARS="${ENV_VARS} -e ${line}"
-    done
     ENV_VARS_STRING=""
     for vars in ${productEnvVars// /}; do
         debug "Entry => $vars"
@@ -604,8 +603,8 @@ function generateProxyEnv() {
     fi
     ENV_VARS="${ENV_VARS} ${PROXY_PARAM}"
 }
-generateProxyEnv
-echo "ENV_VARS=${ENV_VARS}"
+#generateProxyEnv
+#echo "ENV_VARS=${ENV_VARS}"
 
 ###################################################
 #### ---- Function: Generate privilege String  ----
@@ -629,10 +628,9 @@ echo ${privilegedString}
 #### ---- Mostly, you don't need change below ----
 ###################################################
 function cleanup() {
-    containerID=`sudo docker ps -a|grep "${instanceName}" | awk '{print $1}'`
-    # if [ ! "`sudo docker ps -a|grep ${instanceName}`" == "" ]; then
+    containerID=`docker ps -a | grep "${instanceName}" | awk '{print $1}' `
     if [ "${containerID}" != "" ]; then
-         sudo docker rm -f ${containerID}
+        docker rm -f ${containerID}
     fi
 }
 
@@ -821,23 +819,19 @@ fi
 ##################################################
 ##################################################
 set -x
-echo -e ">>> (final) ENV_VARS=${ENV_VARS}"
+echo ">>> (final) ENV_VARS=${ENV_VARS}"
+echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+echo "args-amper:$@"
+echo "args-start:$*"
+
 case "${BUILD_TYPE}" in
     0)
         #### 0: (default) has neither X11 nor VNC/noVNC container build image type
         #### ---- for headless-based / GUI-less ---- ####
-        docker run \
-            --name=${instanceName} \
-            --restart=${RESTART_OPTION} \
-            ${GPU_OPTION} \
-            ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} \
-            ${privilegedString} \
-            ${USER_VARS} \
-            ${ENV_VARS} \
-            ${VOLUME_MAP} \
-            ${PORT_MAP} \
-            ${imageTag} \
-            $@
+	bash -c "sudo docker run --name=${instanceName}  --restart=${RESTART_OPTION}  ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS}  ${privilegedString}  ${USER_VARS} $ENV_VARS ${VOLUME_MAP}  ${PORT_MAP}  ${imageTag} $* "
+
+        #bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_VARS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@ "
         ;;
     1)
         #### 1: X11/Desktip container build image type

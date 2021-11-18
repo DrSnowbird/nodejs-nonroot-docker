@@ -26,17 +26,18 @@ services:
       ## ==== Common mapping: ====
       - /etc/hosts:/etc/hosts
       - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix
       - /var/run/docker.sock:/var/run/docker.sock
       #- ./certificates:/home/developer/certificates
       ## ==== Use $HOME/data-docker as base directory: ====
-      #- $HOME/data-docker/nodejs-nonroot-docker/data:/home/developer/data
-      #- $HOME/data-docker/nodejs-nonroot-docker/workspace:/home/developer/workspace
+      - $HOME/data-docker/nodejs-nonroot-docker/data:/home/developer/data
+      - $HOME/data-docker/nodejs-nonroot-docker/workspace:/home/developer/workspace
       ## ==== Use current directory as root for mapping Volumes: ====
       ## (You need to manually create those child directory: ./data, ./workspace, and others)
-      - ./data:/home/developer/data
-      - ./workspace:/home/developer/workspace
+      #- ./data:/home/developer/data
+      #- ./workspace:/home/developer/workspace
       ## ==== App's additional mapping Volumes: ====
-      - ./app:/home/developer/app
+      #- ./app:/home/developer/app
 
     ## -------------------------------
     ## -- Change to your specific port
@@ -45,8 +46,8 @@ services:
     #   - "12345:12345"
     ports:
       - "3000:3000"
-      - "8282:8282"
-      - "9292:9292"
+    #  - "8282:8282"
+    #  - "9292:9292"
 
     ## -----------------------------
     ## -- Network setup if needed --
