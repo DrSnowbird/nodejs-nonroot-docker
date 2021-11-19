@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 #### ---------------------------------
 #### --- PROGRAM_TYPE: py, java, js -- 
