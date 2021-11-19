@@ -74,42 +74,28 @@ RUN groupadd ${USER} && useradd ${USER} -m -d ${HOME} -s /bin/bash -g ${USER} &&
     echo "${USER} ALL=NOPASSWD:ALL" | tee -a /etc/sudoers && \
     echo "USER =======> ${USER}" && ls -al ${HOME}
 
-###########################################
-#### ---- entrypoint script setup ---- ####
-###########################################
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+#########################################
+##### ---- Docker Entrypoint : ---- #####
+#########################################
+ENV APP_HOME=${APP_HOME:-$HOME/app}
+ENV APP_MAIN=${APP_MAIN:-setup.sh}
 
-#############################################
-#### ---- USER as Owner for scripts ---- ####
-#############################################
-RUN chown ${USER}:${USER} -R ${INSTALL_DIR}/scripts /docker-entrypoint.sh
+COPY --chown=$USER:$USER app ${APP_HOME}
 
-############################################
-#### ---- Set up user environments ---- ####
-############################################
-ENV WORKSPACE=${HOME}/workspace
-ENV DATA=${HOME}/data
+COPY docker-entrypoint.sh /
+COPY ${APP_MAIN}  ${APP_HOME}/
 
+RUN sudo chmod +x /docker-entrypoint.sh
+
+#####################################
+##### ---- user: developer ---- #####
+#####################################
+WORKDIR ${APP_HOME}
 USER ${USER}
-WORKDIR ${HOME}
-
-############################################
-#### ---- Volumes: data, workspace ---- ####
-############################################
-RUN mkdir ${HOME}/app
-WORKDIR ${HOME}/app
-
-############################################
-#### ---- NPM: websocket           ---- ####
-############################################
-#WORKDIR ${HOME}
-RUN npm install websocket ws
-
-#########################
-#### ---- Entry ---- ####
-#########################
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["/bin/bash"]
+
+#### (Test only)
+CMD ["setup.sh"]
+#CMD ["/bin/bash"]
 

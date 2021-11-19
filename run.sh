@@ -510,7 +510,7 @@ function generateEnvVars2() {
         #value_trim="${value##+([[:space:]])}"
         value_trim="`echo $value | sed 's/^[[:space:]]*//'`"
         echo "$key=${value_trim}" 
-        ENV_VARS="${ENV_VARS} -e \"${key}=${value_trim}"
+        ENV_VARS="${ENV_VARS} -e \"${key}=${value_trim}\""
 #        multi_words=`echo "$key"|grep APP_RUN_CMD`
 #        if [ "$multi_words" != "" ]; then
 #            ENV_VARS=$ENV_VARS" -e \"$key=$value_trim\""

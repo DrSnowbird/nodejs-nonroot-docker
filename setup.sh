@@ -4,9 +4,9 @@
 #### --- PROGRAM_TYPE: py, java, js -- 
 #### ---------------------------------
 #### MANDATORY: ONLY choose one here
-PROGRAM_TYPE="py"
+#PROGRAM_TYPE="py"
 #PROGRAM_TYPE="java"
-#PROGRAM_TYPE="js"
+PROGRAM_TYPE="js"
 
 # -------------------------------
 # ----------- Usage -------------
@@ -15,8 +15,6 @@ PROGRAM_TYPE="py"
 # Run the Application:
 #   ./setup.sh
 # -------------------------------
-# -- debug use only --
-verify=1
 
 set -e
 env
@@ -103,6 +101,25 @@ function runCommands() {
     fi
 }
 
+APP_RUN_EXE="node"
+function setRunnerExe() {
+    case "$string" in 
+        *java)
+            APP_RUN_EXE=java
+            ;;
+        *js)
+            APP_RUN_EXE=node
+            ;;
+        *py)
+            APP_RUN_EXE=python
+            ;;
+    esac
+    if [ "$PROGRAM_TYPE" = "js" ]; then
+         APP_RUN_EXE=node
+    fi
+}
+setRunnerExe
+echo ">>>>>>>APP_RUN_EXE=$APP_RUN_EXE"
 echo ">>>>>>>APP_RUN_CMD=$APP_RUN_CMD"
 verifyCommand ${APP_RUN_CMD%% *}
 
@@ -138,7 +155,7 @@ if [ "$APP_RUN_CMD" = "" ]; then
         if [ "$FOUND_PROGRAM" != "" ]; then
             APP_RUN_DIR=$(dirname $FOUND_PROGRAM)
             APP_RUN_MAIN=$FOUND_PROGRAM
-            APP_RUN_CMD="python3 ${APP_RUN_MAIN}"
+            APP_RUN_CMD="${APP_RUN_EXE} ${APP_RUN_MAIN}"
             echo ">>> Auto detect (in app/) APP_RUN_DIR : $APP_RUN_DIR"
             echo ">>> Auto detect (in app/) APP_RUN_MAIN: $APP_RUN_MAIN"
             echo ">>> Auto detect (in app/) APP_RUN_CMD : $APP_RUN_CMD"

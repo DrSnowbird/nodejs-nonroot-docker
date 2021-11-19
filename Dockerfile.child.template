@@ -1,21 +1,47 @@
-FROM openkbs/nodejs-nonroot-docker
+ARG BASE=${BASE:-openkbs/nodejs-nonroot-docker}
+FROM ${BASE}
 
 MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
 
 USER ${USER:-developer}
 WORKDIR ${HOME:-/home/developer}
 
+ENV APP_HOME=${APP_HOME:-$HOME/app}
+ENV APP_MAIN=${APP_MAIN:-setup.sh}
+
 #########################
 #### ---- App:  ---- ####
 #########################
 COPY --chown=$USER:$USER ./app $HOME/app
 
-#### (Add your child container code here)
-#### (Add your child container code here)
-#### (Add your child container code here)
+#########################################
+##### ---- Setup: Entry Files  ---- #####
+#########################################
+ENV APP_HOME=${APP_HOME:-$HOME/app}
+ENV APP_MAIN=${APP_MAIN:-setup.sh}
 
-#########################
-#### ---- Entry ---- ####
-#########################
+COPY --chown=${USER}:${USER} docker-entrypoint.sh /
+COPY --chown=${USER}:${USER} ${APP_MAIN} ${APP_HOME}/setup.sh
+
+RUN sudo chmod +x /docker-entrypoint.sh ${APP_HOME}/setup.sh 
+
+#########################################
+##### ---- Docker Entrypoint : ---- #####
+#########################################
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["/bin/bash"]
+
+#####################################
+##### ---- user: developer ---- #####
+#####################################
+WORKDIR ${APP_HOME}
+USER ${USER}
+
+######################
+#### (Test only) #####
+######################
+#CMD ["/bin/bash"]
+######################
+#### (RUN setup) #####
+######################
+CMD ["setup.sh"]
+

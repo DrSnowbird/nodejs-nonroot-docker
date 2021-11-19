@@ -100,7 +100,7 @@ function cloneProject() {
     ## -- Overwrite Dockefile using Dockerfile.child.template: --
     ## ----------------------------------------------------------
     if [ -s ${DEST_PROJ_DIR}/Dockerfile.child.template ]; then
-        mv ${DEST_PROJ_DIR}/Dockerfile.child.template ${DEST_PROJ_DIR}/Dockerfile/
+        mv ${DEST_PROJ_DIR}/Dockerfile.child.template ${DEST_PROJ_DIR}/Dockerfile
     else
         echo -e "*** ERROR: Can't find template child Dockerfile: ${DEST_PROJ_DIR}/Dockerfile.child.template"
     fi

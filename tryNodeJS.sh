@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-SCRIPT_FILE=SimpleServer.js
+SCRIPT_FILE=simple-server.js
 HOST_PORT=3000
 SERVER_PORT=3000
 
@@ -28,7 +28,7 @@ cleanup
 
 mkdir -p ./data
 
-# To run: nodejs ./SimpleServer.js
+# To run: nodejs ./simple-server.js
 # Then => Open http://localhost:3000/
 # To see: Hello World!
 
@@ -41,7 +41,7 @@ const port = 3000;
 const server = http.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello World from openkbs/jdk-mvn-py3 with NodeJS supports! \n See https://github.com/DrSnowbird/nodejs-nonroot-docker \n');
+  res.end('Hello World from openkbs with NodeJS supports! \n See https://github.com/DrSnowbird/nodejs-nonroot-docker \n');
 });
 
 server.listen(port, hostname, () => {

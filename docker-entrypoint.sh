@@ -9,25 +9,31 @@
 set -e
 
 env
-whoami
-env | sort
 
-echo "Inputs: $*"
+APP_MAIN=${APP_MAIN:-setup.sh}
 
-
-#### ------------------------------------------------------------------------
-#### ---- Extra line added in the script to run all command line arguments
-#### ---- To keep the docker process staying alive if needed.
-#### ------------------------------------------------------------------------
-set -v
-if [ $# -gt 0 ]; then
-
-    #### 1.) Setup needed stuffs, e.g., init db etc. ....
-    #### (do something here for preparation)
-    exec "$@"
-
+base_app=$(basename $APP_MAIN)
+find_app_main=`find $HOME -name $base_app -print | head -n 1`
+if [ "${find_app_main}" != "" ]; then
+    APP_MAIN=${find_app_main}
+    echo "--- Found the actual location of APP_MAIN: ${APP_MAIN}"
 else
-    /bin/bash
+    echo "***** ERROR *****: Can't find"
+    exit 1
 fi
 
-#tail -f /dev/null
+# If we're running "myAppName", provide default options
+if [[ ${APP_MAIN} =~ "$1" ]]; then
+    echo ">> Running: ${APP_MAIN}"
+    shift 1
+    # Then run it with default options plus whatever else
+    # was given in the command
+    #exec ${APP_HOME}/${APP_MAIN} "$@"
+    exec ${APP_HOME}/${base_app} "$@"
+else
+   # Otherwise just run what was given in the command
+   echo ">> Running: $@"
+   #exec "$@"
+   $@
+fi
+
