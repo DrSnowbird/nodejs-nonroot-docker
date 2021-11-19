@@ -103,7 +103,7 @@ function runCommands() {
 
 APP_RUN_EXE="node"
 function setRunnerExe() {
-    case "$string" in 
+    case "${PROGRAM_TYPE}" in 
         *java)
             APP_RUN_EXE=java
             ;;
@@ -114,9 +114,6 @@ function setRunnerExe() {
             APP_RUN_EXE=python
             ;;
     esac
-    if [ "$PROGRAM_TYPE" = "js" ]; then
-         APP_RUN_EXE=node
-    fi
 }
 setRunnerExe
 echo ">>>>>>>APP_RUN_EXE=$APP_RUN_EXE"
