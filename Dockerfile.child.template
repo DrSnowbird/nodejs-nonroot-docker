@@ -1,4 +1,4 @@
-ARG BASE=${BASE:-openkbs/nodejs-nonroot-docker}
+ARG BASE=${BASE:-openkbs/{{PARENT_CONTAINER}}}
 FROM ${BASE}
 
 MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
