@@ -4,13 +4,6 @@ MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
 
 ENV DEBIAN_FRONTEND noninteractive
 
-#### ---------------------
-#### ---- USER, GROUP ----
-#### ---------------------
-ENV USER_ID=${USER_ID:-1000}
-ENV GROUP_ID=${GROUP_ID:-1000}
-
-
 ##############################################
 #### ---- Installation Directories   ---- ####
 ##############################################
@@ -30,18 +23,15 @@ RUN cd ${SCRIPT_DIR} && ${SCRIPT_DIR}/setup_system_proxy.sh
 ########################################
 #### update ubuntu and Install commons
 ########################################
-ARG LIB_DEV_LIST="apt-utils automake pkg-config libpcre3-dev zlib1g-dev liblzma-dev"
-ARG LIB_BASIC_LIST="curl iputils-ping nmap net-tools build-essential software-properties-common apt-transport-https"
-ARG LIB_COMMON_LIST="bzip2 libbz2-dev git wget unzip vim python3-pip python3-setuptools python3-dev python3-venv python3-numpy python3-scipy python3-pandas python3-matplotlib"
-ARG LIB_TOOL_LIST="graphviz libsqlite3-dev sqlite3 git xz-utils"
+ARG LIB_DEV_LIST="apt-utils"
+ARG LIB_BASIC_LIST="curl wget"
+ARG LIB_COMMON_LIST="sudo bzip2 git xz-utils unzip vim"
+ARG LIB_TOOL_LIST="graphviz"
 
 RUN apt-get update -y && \
-    apt-get install -y ${LIB_DEV_LIST} && \
-    apt-get install -y ${LIB_BASIC_LIST} && \
-    apt-get install -y ${LIB_COMMON_LIST} && \
-    apt-get install -y ${LIB_TOOL_LIST} && \
+    apt-get install -y ${LIB_DEV_LIST}  ${LIB_BASIC_LIST}  ${LIB_COMMON_LIST} ${LIB_TOOL_LIST} && \
     apt-get install -y sudo && \
-    apt-get clean -y && \
+    apt-get clean -y && apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
 #########################################
@@ -53,15 +43,29 @@ ENV NODE_VERSION=${NODE_VERSION}
 RUN apt-get update -y && \
     curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
     apt-get install -y nodejs && \
-    npm install -g npm@latest
+    npm install -g npm@latest && \
+    apt-get clean -y && apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
     
 RUN cd ${SCRIPT_DIR}; ${SCRIPT_DIR}/setup_npm_proxy.sh
+
+########################
+#### ---- Yarn ---- ####
+########################
+# Ref: https://classic.yarnpkg.com/en/docs/install/#debian-stable
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update -y && \ 
+    apt-get install -y yarn && \
+    apt-get clean -y && apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
 
 ###################################
 #### ---- user: developer ---- ####
 ###################################
-ENV USER_ID=${USER_ID:-1000}
-ENV GROUP_ID=${GROUP_ID:-1000}
+#### ---------------------
+#### ---- USER, GROUP ----
+#### ---------------------
 ENV USER=${USER:-developer}
 ENV HOME=/home/${USER}
 
@@ -82,8 +86,8 @@ ENV APP_MAIN=${APP_MAIN:-setup.sh}
 
 COPY --chown=$USER:$USER app ${APP_HOME}
 
-COPY docker-entrypoint.sh /
-COPY ${APP_MAIN}  ${APP_HOME}/
+COPY --chown=$USER:$USER docker-entrypoint.sh /
+COPY --chown=$USER:$USER ${APP_MAIN}  ${APP_HOME}/
 
 RUN sudo chmod +x /docker-entrypoint.sh
 
