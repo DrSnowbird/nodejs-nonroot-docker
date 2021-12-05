@@ -24,7 +24,7 @@ RUN cd ${SCRIPT_DIR} && ${SCRIPT_DIR}/setup_system_proxy.sh
 #### update ubuntu and Install commons
 ########################################
 ARG LIB_DEV_LIST="apt-utils"
-ARG LIB_BASIC_LIST="curl wget"
+ARG LIB_BASIC_LIST="curl wget curl wget unzip ca-certificates"
 ARG LIB_COMMON_LIST="sudo bzip2 git xz-utils unzip vim"
 ARG LIB_TOOL_LIST="graphviz"
 
@@ -85,7 +85,6 @@ ENV APP_HOME=${APP_HOME:-$HOME/app}
 ENV APP_MAIN=${APP_MAIN:-setup.sh}
 
 COPY --chown=$USER:$USER app ${APP_HOME}
-
 COPY --chown=$USER:$USER docker-entrypoint.sh /
 COPY --chown=$USER:$USER ${APP_MAIN}  ${APP_HOME}/
 
