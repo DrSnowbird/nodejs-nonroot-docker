@@ -85,10 +85,14 @@ ENV APP_HOME=${APP_HOME:-$HOME/app}
 ENV APP_MAIN=${APP_MAIN:-setup.sh}
 
 COPY --chown=$USER:$USER app ${APP_HOME}
-COPY --chown=$USER:$USER docker-entrypoint.sh /
-COPY --chown=$USER:$USER ${APP_MAIN}  ${APP_HOME}/
+COPY --chown=$USER:$USER ${APP_MAIN} ${APP_HOME}/
 
-RUN sudo chmod +x /docker-entrypoint.sh
+COPY --chown=${USER}:${USER} docker-entrypoint.sh /
+COPY --chown=${USER}:${USER} scripts /scripts
+COPY --chown=${USER}:${USER} certificates /certificates
+RUN /scripts/setup_system_certificates.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
 
 #####################################
 ##### ---- user: developer ---- #####

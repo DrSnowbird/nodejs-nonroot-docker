@@ -17,7 +17,7 @@ services:
       - GROUP_ID=${GROUP_ID:-1000}
       # - APP_HOME=${APP_HOME:-/home/developer/app}
       # - APP_MAIN=${APP_MAIN:-setup.sh}
-      - DOCKER_HOST_IP=${DOCKER_HOST_IP:-192.168.0.121}
+      - DOCKER_HOST_IP=${DOCKER_HOST_IP:-127.0.1.1}
       - DOCKER_HOST_NAME=${DOCKER_HOST_NAME:-aurora}
     ## -------------------------------------------
     ## -- Change to your specific Volumes Mapping:
@@ -46,8 +46,6 @@ services:
     #   - "12345:12345"
     ports:
       - "3000:3000"
-    #  - "8282:8282"
-    #  - "9292:9292"
 
     ## -----------------------------
     ## -- Network setup if needed --
