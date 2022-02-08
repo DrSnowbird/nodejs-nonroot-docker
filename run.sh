@@ -52,6 +52,11 @@ SHM_SIZE="--shm-size=1g"
 ## ------------------------------------------------------------------------
 RUN_OPTION=${RUN_OPTION:-" -it "}
 
+# -- ref: using net=host will speed CPU performance ~ 20%
+# -- https://blog.gdeltproject.org/experiments-using-universal-sentence-encoder-embeddings-for-news-similarity/
+#NET_HOST="--net=host"
+NET_HOST=
+
 PARAMS=""
 while (( "$#" )); do
   case "$1" in
@@ -65,6 +70,10 @@ while (( "$#" )); do
       IS_TO_RUN_CPU=0
       IS_TO_RUN_GPU=1
       GPU_OPTION=" --gpus all "
+      shift
+      ;;
+    -n|--net-host)
+      NET_HOST="--net=host"
       shift
       ;;
     -d|--detach)
@@ -192,6 +201,9 @@ echo "$@"
 #MORE_OPTIONS="--privileged=true"
 if [ "${SHM_SIZE}" != "" ]; then
     MORE_OPTIONS+=" "${SHM_SIZE}
+fi
+if [ "${NET_HOST}" != "" ]; then
+    MORE_OPTIONS+=" "${NET_HOST}
 fi
 
 ## ------------------------------------------------------------------------
@@ -886,7 +898,6 @@ echo ">>> (final) ENV_VARS=${ENV_VARS}"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo -e ">>> (final) ENV_VARS=${ENV_VARS}"
 
-
 MORE_OPTIONS="${MORE_OPTIONS} ${HOSTS_OPTIONS} "
 
 set -x
@@ -894,8 +905,7 @@ case "${BUILD_TYPE}" in
     0)
         #### 0: (default) has neither X11 nor VNC/noVNC container build image type
         #### ---- for headless-based / GUI-less ---- ####
-	    ##bash -c "docker run --name=${instanceName}  --restart=${RESTART_OPTION}  ${REMOVE_OPTION} ${RUN_OPTION} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS}  ${privilegedString}  ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP}  ${PORT_MAP}  ${imageTag} $* "
-        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag}" $@
+        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@"
         ;;
     1)
         #### 1: X11/Desktip container build image type
@@ -906,7 +916,7 @@ case "${BUILD_TYPE}" in
         #X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix -e DBUS_SYSTEM_BUS_ADDRESS=unix:path=/var/run/dbus/system_bus_socket"
         X11_OPTION="-e DISPLAY=$DISPLAY -v /dev/shm:/dev/shm -v /tmp/.X11-unix:/tmp/.X11-unix"
         echo "X11_OPTION=${X11_OPTION}"
-        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${MEDIA_OPTIONS} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${X11_OPTION} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag}" $@
+        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${GPU_OPTION} ${MEDIA_OPTIONS} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${X11_OPTION} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@"
         ;;
     2)
         #### 2: VNC/noVNC container build image type
@@ -918,7 +928,7 @@ case "${BUILD_TYPE}" in
             VNC_RESOLUTION=1920x1080
             ENV_VARS="${ENV_VARS} -e VNC_RESOLUTION=${VNC_RESOLUTION}" 
         fi
-        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag}" $@
+        bash -c "docker run --name=${instanceName} --restart=${RESTART_OPTION} ${REMOVE_OPTION} ${RUN_OPTION} ${HOSTS_OPTIONS} ${MISC_OPTIONS} ${MORE_OPTIONS} ${CERTIFICATE_OPTIONS} ${privilegedString} ${USER_OPTIONS} ${ENV_VARS} ${VOLUME_MAP} ${PORT_MAP} ${imageTag} $@"
         ;;
 
 esac
