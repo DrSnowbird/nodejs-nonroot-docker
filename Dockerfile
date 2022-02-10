@@ -38,7 +38,7 @@ RUN apt-get update -y && \
 #### ---- Node from NODESOURCES ---- ####
 #########################################
 # Ref: https://github.com/nodesource/distributions
-ARG NODE_VERSION=${NODE_VERSION:-16}
+ARG NODE_VERSION=${NODE_VERSION:-current}
 ENV NODE_VERSION=${NODE_VERSION}
 RUN apt-get update -y && \
     curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
