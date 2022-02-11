@@ -3,19 +3,20 @@ FROM ${BASE}
 
 MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
 
-#########################
-#### ---- App:  ---- ####
-#########################
+###############################
+#### ---- App: (ENV)  ---- ####
+###############################
 USER ${USER:-developer}
 WORKDIR ${HOME:-/home/developer}
 
 ENV APP_HOME=${APP_HOME:-$HOME/app}
 ENV APP_MAIN=${APP_MAIN:-setup.sh}
 
-#########################
-#### ---- App:  ---- ####
-#########################
+#################################
+#### ---- App: (common) ---- ####
+#################################
 COPY --chown=$USER:$USER ./app $HOME/app
+COPY --chown=$USER:$USER ./bin $HOME/bin
 
 #########################################
 ##### ---- Setup: Entry Files  ---- #####
@@ -34,6 +35,13 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 #####################################
 WORKDIR ${APP_HOME}
 USER ${USER}
+
+#############################################
+#############################################
+#### ---- App: (Customization here) ---- ####
+#############################################
+#############################################
+#### (you customization code here!) #########
 
 ######################
 #### (Test only) #####
