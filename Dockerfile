@@ -24,7 +24,7 @@ RUN cd ${SCRIPT_DIR} && ${SCRIPT_DIR}/setup_system_proxy.sh
 #### update ubuntu and Install commons
 ########################################
 ARG LIB_DEV_LIST="apt-utils"
-ARG LIB_BASIC_LIST="curl wget curl wget unzip ca-certificates"
+ARG LIB_BASIC_LIST="curl wget unzip ca-certificates"
 ARG LIB_COMMON_LIST="sudo bzip2 git xz-utils unzip vim"
 ARG LIB_TOOL_LIST="graphviz"
 
@@ -41,7 +41,7 @@ RUN apt-get update -y && \
 ARG NODE_VERSION=${NODE_VERSION:-current}
 ENV NODE_VERSION=${NODE_VERSION}
 RUN apt-get update -y && \
-    curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
+    curl -k -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm@latest && \
     apt-get clean -y && apt-get autoremove && \
@@ -53,7 +53,7 @@ RUN cd ${SCRIPT_DIR}; ${SCRIPT_DIR}/setup_npm_proxy.sh
 #### ---- Yarn ---- ####
 ########################
 # Ref: https://classic.yarnpkg.com/en/docs/install/#debian-stable
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
+RUN curl -k -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list && \
     apt-get update -y && \ 
     apt-get install -y yarn && \
