@@ -43,7 +43,6 @@ ENV NODE_VERSION=${NODE_VERSION}
 RUN apt-get update -y && \
     curl -k -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
     apt-get install -y nodejs && \
-    npm install -g npm@latest && \
     apt-get clean -y && apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
     
