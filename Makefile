@@ -83,6 +83,12 @@ build:
 	docker images | grep $(DOCKER_IMAGE)
 	@echo ">>> Total Dockder images Build using time in seconds: $$(($$(date +%s)-$(TIME_START))) seconds"
 
+build-alt:
+	docker build \
+	    -t $(DOCKER_IMAGE)-alt:$(VERSION) -f Dockerfile-alt .
+	docker images | grep $(DOCKER_IMAGE)
+	@echo ">>> Total Dockder images Build using time in seconds: $$(($$(date +%s)-$(TIME_START))) seconds"
+
 push:
 	docker commit -m "$comment" ${containerID} ${imageTag}:$(VERSION)
 	docker push $(DOCKER_IMAGE):$(VERSION)

@@ -14,6 +14,22 @@ If [ you are looking for such a common requirement as a base Container ]:
 # Build (Do this first!)
 ```
 ./build.sh
+
+or
+
+make build
+
+```
+
+# `Build Container for Corporate Proxy Constraints`
+* Use the following to build and run alternative due to corporate proxy/certificate issue impacting curl, and many other deeper installation scripts to fail:
+```
+make build-alt
+
+To run
+
+./run.sh -t openkbs/nodejs-nonroot-docker-alt
+
 ```
 
 # Run (recommended for easy-start)

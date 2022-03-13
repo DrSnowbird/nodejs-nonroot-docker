@@ -1,0 +1,145 @@
+#FROM ubuntu:20.04
+#FROM ubuntu:latest
+FROM node:latest
+ 
+MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
+ 
+ENV DEBIAN_FRONTEND noninteractive
+ 
+##################################
+#### ---- Tools: setup   ---- ####
+##################################
+#ENV LANG C.UTF-8
+#RUN set -eux; \
+#    apt-get update; \
+#    apt-get install -y --no-install-recommends \
+#       sudo bash curl wget unzip ca-certificates findutils vim net-tools coreutils gettext pwgen tini; \
+#    apt-get autoremove; \
+#    rm -rf /var/lib/apt/lists/* && \
+#    echo "vm.max_map_count=262144" | tee -a /etc/sysctl.conf
+ 
+########################################
+#### update ubuntu and Install commons
+########################################
+#ARG LIB_DEV_LIST="apt-utils"
+#ARG LIB_BASIC_LIST="curl wget unzip ca-certificates"
+#ARG LIB_COMMON_LIST="sudo bzip2 git xz-utils unzip vim"
+#ARG LIB_TOOL_LIST="graphviz"
+#
+#RUN apt-get update -y && \
+#    apt-get install -y ${LIB_DEV_LIST}  ${LIB_BASIC_LIST}  ${LIB_COMMON_LIST} ${LIB_TOOL_LIST} && \
+#    apt-get install -y sudo && \
+#    apt-get clean -y && apt-get autoremove && \
+#    rm -rf /var/lib/apt/lists/*
+ 
+user 0
+ 
+##############################################
+#### ---- Installation Directories   ---- ####
+##############################################
+ENV INSTALL_DIR=${INSTALL_DIR:-/usr}
+ENV SCRIPT_DIR=${SCRIPT_DIR:-$INSTALL_DIR/scripts}
+ 
+##############################################
+#### ---- Corporate Proxy Auto Setup ---- ####
+##############################################
+#### ---- Transfer setup ---- ####
+COPY scripts ${SCRIPT_DIR}
+RUN chmod +x ${SCRIPT_DIR}/*.sh && \
+    ${SCRIPT_DIR}/setup_system_certificates.sh && \
+    ${SCRIPT_DIR}/setup_system_proxy.sh
+ 
+###################################
+#### ---- user: developer ---- ####
+###################################
+#### ---------------------
+#### ---- USER, GROUP ----
+#### ---------------------
+ENV USER=${USER:-developer}
+ENV HOME=/home/${USER}
+ 
+## -- setup NodeJS user profile
+RUN groupadd ${USER} && useradd ${USER} -m -d ${HOME} -s /bin/bash -g ${USER} && \
+    ## -- Ubuntu -- \
+    usermod -aG sudo ${USER} && \
+    ## -- Centos -- \
+    #usermod -aG wheel ${USER} && \
+    echo "${USER} ALL=NOPASSWD:ALL" | tee -a /etc/sudoers && \
+    echo "USER =======> ${USER}" && ls -al ${HOME}
+ 
+#########################################
+#### ---- Node from NODESOURCES ---- ####
+#########################################
+# # ref: https://github.com/nvm-sh/nvm
+# ENV NVM_VERSION=${NVM_VERSION:-v0.39.1}
+# RUN curl -k -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh | bash - && \
+#     source ~/.bashrc && \
+#     nvm --version && \
+#     nvm install node
+#
+#    export NVM_DIR="$HOME/.nvm" && \
+#   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  && \
+#   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" && \
+#   nvm --version && \
+#   nvm install node
+ 
+#RUN nvm install node && \
+ 
+# RUN node -v && npm -v
+ 
+ 
+# Ref: https://github.com/nodesource/distributions
+#ENV NODE_VERSION=${NODE_VERSION:-current}
+#ENV NODE_VERSION=${NODE_VERSION:-17}
+#RUN apt-get update -y && \
+#    curl -fsSL https://deb.nodesource.com/setup_17.x | bash - && \
+#    apt-get install -y nodejs && \
+#    apt-get clean -y && apt-get autoremove && \
+#    rm -rf /var/lib/apt/lists/*
+   
+#    curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -  && \
+#    curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x -O setup_${NODE_VERSION}.x && \
+#    bash setup_${NODE_VERSION}.x && \
+ 
+########################
+#### ---- Yarn ---- ####
+########################
+# Ref: https://classic.yarnpkg.com/en/docs/install/#debian-stable
+#RUN node -v
+#RUN npm install --global yarn
+ 
+#RUN apt-get update && apt-get install -y gnupg && \
+#    curl -k -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+#    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+#    apt-get update -y && \
+#    apt-get install -y yarn && \
+#    apt-get clean -y && apt-get autoremove && \
+#    rm -rf /var/lib/apt/lists/*
+ 
+#### ---- Apt Proxy & NPM Proxy & NPM Permission setup if detected: ---- ####
+RUN ${SCRIPT_DIR}/setup_npm_proxy.sh
+ 
+#########################################
+##### ---- Docker Entrypoint : ---- #####
+#########################################
+ENV APP_HOME=${APP_HOME:-$HOME/app}
+ENV APP_MAIN=${APP_MAIN:-setup.sh}
+ 
+COPY --chown=$USER:$USER app ${APP_HOME}
+COPY --chown=$USER:$USER ${APP_MAIN} ${APP_HOME}/
+ 
+COPY --chown=${USER}:${USER} docker-entrypoint.sh /
+COPY --chown=${USER}:${USER} certificates /certificates
+ 
+#####################################
+##### ---- user: developer ---- #####
+#####################################
+WORKDIR ${APP_HOME}
+USER ${USER}
+ 
+ENTRYPOINT ["/docker-entrypoint.sh"]
+ 
+#### (Test only)
+CMD ["setup.sh"]
+#CMD ["/bin/bash"]
+
