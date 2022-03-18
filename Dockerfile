@@ -4,35 +4,36 @@ MAINTAINER DrSnowbird "DrSnowbird@openkbs.org"
 
 ENV DEBIAN_FRONTEND noninteractive
 
+##################################
+#### ---- Tools: setup   ---- ####
+##################################
+ENV LANG C.UTF-8
+ARG LIB_DEV_LIST="apt-utils"
+ARG LIB_BASIC_LIST="curl wget unzip ca-certificates"
+ARG LIB_COMMON_LIST="sudo bzip2 git xz-utils unzip vim net-tools" # coreutils gettext pwgen tini;
+ARG LIB_TOOL_LIST="graphviz"
+
+RUN set -eux; \
+    apt-get update -y && \
+    apt-get install -y --no-install-recommends ${LIB_DEV_LIST}  ${LIB_BASIC_LIST}  ${LIB_COMMON_LIST} ${LIB_TOOL_LIST} && \
+    apt-get clean -y && apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo "vm.max_map_count=262144" | tee -a /etc/sysctl.conf
+    
 ##############################################
 #### ---- Installation Directories   ---- ####
 ##############################################
 ENV INSTALL_DIR=${INSTALL_DIR:-/usr}
 ENV SCRIPT_DIR=${SCRIPT_DIR:-$INSTALL_DIR/scripts}
 
-##############################################
-#### ---- Corporate Proxy Auto Setup ---- ####
-##############################################
-#### ---- Transfer setup ---- ####
+############################################
+##### ---- System: certificates : ---- #####
+##### ---- Corporate Proxy      : ---- #####
+############################################
 COPY ./scripts ${SCRIPT_DIR}
-RUN chmod +x ${SCRIPT_DIR}/*.sh
-
-#### ---- Apt Proxy & NPM Proxy & NPM Permission setup if detected: ---- ####
-RUN cd ${SCRIPT_DIR} && ${SCRIPT_DIR}/setup_system_proxy.sh
-
-########################################
-#### update ubuntu and Install commons
-########################################
-ARG LIB_DEV_LIST="apt-utils"
-ARG LIB_BASIC_LIST="curl wget unzip ca-certificates"
-ARG LIB_COMMON_LIST="sudo bzip2 git xz-utils unzip vim"
-ARG LIB_TOOL_LIST="graphviz"
-
-RUN apt-get update -y && \
-    apt-get install -y ${LIB_DEV_LIST}  ${LIB_BASIC_LIST}  ${LIB_COMMON_LIST} ${LIB_TOOL_LIST} && \
-    apt-get install -y sudo && \
-    apt-get clean -y && apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/*
+COPY certificates /certificates
+RUN ${SCRIPT_DIR}/setup_system_certificates.sh
+RUN ${SCRIPT_DIR}/setup_system_proxy.sh
 
 #########################################
 #### ---- Node from NODESOURCES ---- ####
@@ -83,13 +84,9 @@ RUN groupadd ${USER} && useradd ${USER} -m -d ${HOME} -s /bin/bash -g ${USER} &&
 ENV APP_HOME=${APP_HOME:-$HOME/app}
 ENV APP_MAIN=${APP_MAIN:-setup.sh}
 
+COPY --chown=${USER}:${USER} docker-entrypoint.sh /
 COPY --chown=$USER:$USER app ${APP_HOME}
 COPY --chown=$USER:$USER ${APP_MAIN} ${APP_HOME}/
-
-COPY --chown=${USER}:${USER} docker-entrypoint.sh /
-COPY --chown=${USER}:${USER} scripts /scripts
-COPY --chown=${USER}:${USER} certificates /certificates
-RUN /scripts/setup_system_certificates.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
