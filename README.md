@@ -21,14 +21,20 @@ make build
 
 ```
 
-# `Build Container for Corporate Proxy Constraints`
-* Use the following to build and run alternative due to corporate proxy/certificate issue impacting curl, and many other deeper installation scripts to fail:
+# Build Container for Corporate Proxy Constraints
+* (New!) With this automation for setup proxy and corproate certificate for allowing the 'build and run' the Container behind your corporate networks!
+* Step-1 Corporate Proxy Setup
+  * If your corporate use proxy to access internet, then you can setup your proxy (in your Host's User envrionment variable ), e.g.,
 ```
-make build-alt
-
-To run
-
-./run.sh -t openkbs/nodejs-nonroot-docker-alt
+(in your $HOME/.bashrc profile)
+export http_proxy=proxy.openkbs.org:8080
+export https_proxy=proxy.openkbs.org:8443
+```
+    
+  * If your corporate use zero-trust VPN, e.g., ZScaler, then just find and download your ZScaler certificate (public certificate), e.g., my-corporate.crt, and then save it in the folder './certificates/'
+  
+* Step-2 Let the automation scripts chained by Dockerfile for building and running your local version of Container instance behind your Corporate Networks.
+* That's it! (Done!)
 
 ```
 
