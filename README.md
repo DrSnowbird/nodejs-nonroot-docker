@@ -21,22 +21,23 @@ make build
 
 ```
 
-# Build Container for Corporate Proxy Constraints
-* (New!) With this automation for setup proxy and corproate certificate for allowing the 'build and run' the Container behind your corporate networks!
-* Step-1 Corporate Proxy Setup
-  * If your corporate use proxy to access internet, then you can setup your proxy (in your Host's User envrionment variable ), e.g.,
-```
-(in your $HOME/.bashrc profile)
-export http_proxy=proxy.openkbs.org:8080
-export https_proxy=proxy.openkbs.org:8443
-```
+# Build/Run Container Inside Corporate Proxy or Networks
+`(New!)` With this automation for setup proxy and corproate certificate for allowing the 'build and run' the Container behind your corporate networks!
+* Step-1-A: Setup Corporate Proxy environment variables:
+    If your corporate use proxy to access internet, then you can setup your proxy (in your Host's User envrionment variable ), e.g.,
+    ```
+    (in your $HOME/.bashrc profile)
+    export http_proxy=proxy.openkbs.org:8080
+    export https_proxy=proxy.openkbs.org:8443
+    ```
     
-  * If your corporate use zero-trust VPN, e.g., ZScaler, then just find and download your ZScaler certificate (public certificate), e.g., my-corporate.crt, and then save it in the folder './certificates/'
-  
-* Step-2 Let the automation scripts chained by Dockerfile for building and running your local version of Container instance behind your Corporate Networks.
-* That's it! (Done!)
-
-```
+* Step-1-B: If your corporate use zero-trust VPN, e.g., ZScaler, then just find and download your ZScaler and/or additional Corproate SSL/HTTPS certificates, e.g., my-corporate.crt, and then save it in the folder './certificates/', e.g.,
+    ```
+    (in folder ./certificates)
+    ├── certificates
+    │   └── my-corporate.crt
+    ```
+* Step-2: That's it! (Done!) Let the automation scripts chained by Dockerfile for building and running your local version of Container instance behind your Corporate Networks.
 
 # Run (recommended for easy-start)
 ```
