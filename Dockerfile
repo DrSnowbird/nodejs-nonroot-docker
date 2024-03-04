@@ -65,6 +65,12 @@ RUN curl -k -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - &&
     apt-get clean -y && apt-get autoremove && \
     rm -rf /var/lib/apt/lists/*
 
+#####################################
+#### ---- sudo warning fix: ---- ####
+#####################################
+## -- fix: in container: sudo: setrlimit(RLIMIT_CORE): Operation not permitted -- ##
+RUN echo "Set disable_coredump false" | sudo tee -a /etc/sudo.conf
+
 ###################################
 #### ---- user: developer ---- ####
 ###################################
