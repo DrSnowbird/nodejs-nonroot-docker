@@ -105,3 +105,8 @@ dist
 
 # app-specific
 *SAVE*
+
+# ----
+\.env
+docker-compose.yml
+
