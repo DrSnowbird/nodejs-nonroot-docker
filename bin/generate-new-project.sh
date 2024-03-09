@@ -52,6 +52,11 @@ DEST_BASE_DIR=`echo "$(basename $DEST_DESIRED_DIR)"`
 CHILD_CONTAINER=`echo "$(basename ${DEST_BASE_DIR})" | tr '[:upper:]' '[:lower:]' `
 DEST_PROJ_DIR=$(dirname $DEST_DESIRED_DIR)/${DEST_BASE_DIR}
 PARENT_CONTAINER=$(basename ${SRC_PROJ_DIR})
+if [ ! -s ${DEST_PROJ_DIR} ]; then
+    mkdir -p ${DEST_PROJ_DIR}
+else
+    echo "... existing target/destination Project directory: ${DEST_PROJ_DIR}"
+fi
 
 echo "--- Auto convert the project name to 'Lower-cased' to due Docker Container naming convention enforce by Docker Engine"
 
@@ -133,6 +138,12 @@ function cloneProject() {
         echo -e "--- INFO: Can't find template child Dockerfile: ${DEST_PROJ_DIR}/Dockerfile.child.template!"
         echo -e "--- INFO: Instead, use the parent Dockerfile as source."
     fi
+    
+    # -- Remove multiple versions for child container:
+    echo -e "--- Replace BUILD_VERSIONS=3.9 3.12 with BUILD_VERSIONS=latest"
+    ${DEST_PROJ_DIR}/bin/replace-key-value-config.sh ${DEST_PROJ_DIR}/Makefile "BUILD_VERSIONS" "latest"
+    cat ${DEST_PROJ_DIR}/Makefile | grep -e "BUILD_VERSIONS="
+
     ## ----------------------------------------------------------
     ## -- Remove .git: --
     ## ----------------------------------------------------------
@@ -152,6 +163,7 @@ testBuildAndRun
 
 echo "-------------------------------- SUCCESS --------------------------------"
 echo "  Generate a new Docker Project: "
+docker images |grep ${CHILD_CONTAINER}
 echo "     - ${DEST_PROJ_DIR}"
 echo "  Status:  "
 echo "     - Tested BUILD and RUN: OK"

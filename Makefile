@@ -38,6 +38,10 @@ REGISTRY_IMAGE=$(REGISTRY_HOST)/$(ORGANIZATION)/$(DOCKER_NAME)
 #VERSION?="$(APP_VERSION)-$$(date +%Y%m%d)"
 VERSION?="$(APP_VERSION)"
 
+# -- Build Multi image versions: --
+# -- Only the last value will be designated as the ":latest" tag!
+BUILD_VERSIONS=latest
+
 ## -- Uncomment this to use local Registry Host --
 DOCKER_IMAGE := $(ORGANIZATION)/$(DOCKER_NAME)
 
@@ -81,14 +85,22 @@ build-time:
 	-t $(DOCKER_IMAGE):$(VERSION) .
 
 build-rm:
-	docker build --force-rm --no-cache \
-		-t $(DOCKER_IMAGE):$(VERSION) .
-
-build:
-	docker build \
-	    -t $(DOCKER_IMAGE):$(VERSION) .
+	for ver in $(BUILD_VERSIONS); do \
+		echo ... NODE_VERSION: $$ver ; \
+		docker build --force-rm --no-cache -t $(DOCKER_IMAGE):$$ver --build-arg NODE_VERSION=$$ver .  ; \
+		docker build --force-rm --no-cache -t $(DOCKER_IMAGE):latest --build-arg NODE_VERSION=$$ver .  ; \
+	done
 	docker images | grep $(DOCKER_IMAGE)
 	@echo ">>> Total Dockder images Build using time in seconds: $$(($$(date +%s)-$(TIME_START))) seconds"
+
+build:
+	for ver in $(BUILD_VERSIONS); do \
+		echo ... NODE_VERSION: $$ver ; \
+		docker build -t $(DOCKER_IMAGE):$$ver --build-arg NODE_VERSION=$$ver .  ; \
+		docker build -t $(DOCKER_IMAGE) --build-arg NODE_VERSION=$$ver .  ; \
+	done
+	docker images | grep $(DOCKER_IMAGE)
+	echo ">>> Total Dockder images Build using time in seconds: $$(($$(date +%s)-$(TIME_START))) seconds"
 
 push:
 	docker commit -m "$comment" ${containerID} ${imageTag}:$(VERSION)
